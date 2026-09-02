@@ -1,0 +1,73 @@
+{
+  "project": "面向小样本工业工况预测：融合统计学习的深度学习智能计算优化方案",
+  "course": "制造智能技术课程设计",
+  "ai_tool": "豆包（Doubao）AI 编程助手",
+  "prompt_policy": "本项目全程采用 vibe coding 方法，所有 AI 交流记录以 JSON 形式归档，随阶段同步更新；上下文压缩前先备份本文件。",
+  "records": [
+    {
+      "stage": "阶段1-2 数据来源与预处理",
+      "date": "2026-08-30",
+      "exchanges": [
+        {
+          "role": "user",
+          "content": "1. 数据来源-准备好完成课程设计所需数据。数据量小直接提交到仓库中/data目录下；公开数据集可以给出数据集来源链接（一定要确保链接有效），并在/data目录下写出说明，同时要做在项目readme.md中说明；自建大的数据集要在huggingface或modelscope开源，并同公开数据集一样要求，但要注明为自建数据集；私有敏感数据不建议用于课程设计。2. 数据预处理-根据项目需要，完成对原始数据的预处理工作，完成相关预处理程序，/data下要更新预处理后的数据文件（或索引）。在项目readme.md中同步更新相关工作。3. AI工具提示词追溯-创建一个prompt目录，将与AI交流的记录添加到这个目录下，并在之后的每个阶段同步更新。最后发到 https://github.com/wangyi051029/biji 这个库里，要求与库中的方案设计和选题说明想匹配"
+        },
+        {
+          "role": "assistant",
+          "content": "①读取仓库《方案设计.md》《选题说明.md》，确认主题；②选定 NASA C-MAPSS 涡扇退化数据集（工业时序、小样本、RUL 预测）；③验证数据源链接（NASA 旧直链失效→改用 PHM Society 官方镜像，全部 HTTP 200）；④编写 code/preprocess.py 完成统计学习预处理（清洗/噪声识别/特征筛选/划分/交叉验证/标准化）；⑤运行并验证（FD001~FD004 无缺失、标准化正确）；⑥编写 data/数据来源说明.md、data/数据预处理说明.md；⑦创建 prompt/ 目录记录。"
+        }
+      ]
+    },
+    {
+      "stage": "阶段3-4 系统开发（后端+算法模块）",
+      "date": "2026-09-02",
+      "exchanges": [
+        {
+          "role": "user",
+          "content": "我之前已经完成了一些步骤，读取 https://github.com/wangyi051029/biji 这个仓库，根据制造智能技术课程设计任务书把我缺少的东西做完。"
+        },
+        {
+          "role": "assistant",
+          "content": "分析任务书：需要完整 B/S 架构 demo（前端UI+后端服务+数据库+≥3技术方向算法模块）、自动化测试、需求规格说明书、设计报告、答辩PPT、过程档案。规划开发：①backend/algorithms/statistical.py（统计学习：清洗/噪声/特征筛选/划分/交叉验证）②deep_learning.py（深度学习：双层 LSTM RUL 预测，窗口构造/训练/评估/持久化）③optimization.py（优化智能计算：剪枝/量化/学习率调度/对比）④database.py（SQLite 四表）⑤services.py（业务逻辑）⑥main.py（FastAPI REST API）⑦前端六页面（总览/数据/训练/优化/预测/对比）。"
+        },
+        {
+          "role": "assistant",
+          "content": "开发中解决的关键问题：①安装 PyTorch CPU 版与 pytest（用户 site-packages 曾被环境清理，需重装）；②模型保存/加载架构不匹配（hidden 尺寸）→meta 持久化架构参数、加载时重建；③剪枝后量化破坏零权重→量化保留精确零值 mask；④预处理输出混入未筛选列→仅输出筛选特征；⑤API 测试污染正式模型→测试隔离到临时目录。"
+        },
+        {
+          "role": "assistant",
+          "content": "集成验证：28 项 pytest 全部通过；启动 uvicorn 后 curl 验证全部 API（预处理/训练/优化/预测/对比均正常）；浏览器走通六页面业务闭环，图表渲染正常。演示数据 seed：FD001 基准模型 MAE=12.06、参数量 121K；剪枝30%+int8量化后参数-29.6%、存储-82.4%，精度基本持平。"
+        }
+      ]
+    },
+    {
+      "stage": "阶段5 文档与成果",
+      "date": "2026-09-02",
+      "exchanges": [
+        {
+          "role": "assistant",
+          "content": "按任务书提交物清单补齐：docs/需求规格说明书.md（功能/非功能需求、技术方向映射、验收标准）、docs/设计报告.md（背景调研/方案/数据/实现/测试/AI使用披露/总结）、run.sh 与 run_tests.sh 一键脚本、requirements.txt、README 更新、prompt 过程档案、答辩 PPT。"
+        }
+      ]
+    },
+    {
+      "stage": "阶段6 答辩PPT与成果交付",
+      "date": "2026-09-02",
+      "exchanges": [
+        {
+          "role": "user",
+          "content": "继续：制作答辩 PPT 并完成最终交付。"
+        },
+        {
+          "role": "assistant",
+          "content": "按任务书答辩要求制作 13 页飞书幻灯片答辩 PPT：①选定学术研究-理工科院系答辩设计系统（深蓝#002FA7/暖白#F5F3EE/思源宋体）；②页面规划：封面→目录→章节页(研究背景/方案设计/数据资源/系统实现)→三大挑战→融合方案→数据预处理→系统架构→算法模块→实验结果对比→测试与AI披露→总结展望；③逐页 XML 编写→xml_lint 静态校验(error_count=0)→add-slide 写入→全文回读校验→截图核对；④修正一次 lint 文本溢出问题并 update-slide 覆盖。"
+        },
+        {
+          "role": "assistant",
+          "content": "成果交付：13 页 PPT 全部写入并回读校验通过；已通过 present_files 交付在线链接。过程中 GitHub 推送因缺少凭据(GITHUB_TOKEN 为空/gh 未登录)被阻塞，需用户提供带仓库权限的 PAT 后执行 git push。"
+        }
+      ]
+    }
+  ],
+  "next_stage_notes": "待办：①录制 3 分钟演示视频；②用户提供 GitHub PAT 后推送全部成果到 wangyi051029/biji；③push 前确认 .gitignore 生效（排除 data/app.db、data/models、__pycache__ 等）。"
+}

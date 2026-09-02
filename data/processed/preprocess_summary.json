@@ -1,0 +1,121 @@
+[
+  {
+    "subset": "FD001",
+    "n_train_units": 100,
+    "n_test_units": 100,
+    "train_samples": 14024,
+    "val_samples": 2444,
+    "test_samples": 4163,
+    "missing": {
+      "total_missing": 0,
+      "missing_by_col": {}
+    },
+    "constant_sensors": [
+      "s1",
+      "s5",
+      "s10",
+      "s16",
+      "s18",
+      "s19"
+    ],
+    "noise_rate": 0.0593,
+    "selected_features": [
+      "s2",
+      "s3",
+      "s4",
+      "s6",
+      "s7",
+      "s8",
+      "s9",
+      "s11",
+      "s12",
+      "s13",
+      "s15",
+      "s17",
+      "s20",
+      "s21"
+    ],
+    "n_selected_features": 14
+  },
+  {
+    "subset": "FD002",
+    "n_train_units": 260,
+    "n_test_units": 259,
+    "train_samples": 36651,
+    "val_samples": 6254,
+    "test_samples": 10854,
+    "missing": {
+      "total_missing": 0,
+      "missing_by_col": {}
+    },
+    "constant_sensors": [],
+    "noise_rate": 0.159,
+    "selected_features": [
+      "s4",
+      "s11",
+      "s14",
+      "s16"
+    ],
+    "n_selected_features": 4
+  },
+  {
+    "subset": "FD003",
+    "n_train_units": 100,
+    "n_test_units": 100,
+    "train_samples": 16825,
+    "val_samples": 2910,
+    "test_samples": 4985,
+    "missing": {
+      "total_missing": 0,
+      "missing_by_col": {}
+    },
+    "constant_sensors": [
+      "s1",
+      "s5",
+      "s16",
+      "s18",
+      "s19"
+    ],
+    "noise_rate": 0.1531,
+    "selected_features": [
+      "s2",
+      "s3",
+      "s4",
+      "s6",
+      "s8",
+      "s9",
+      "s10",
+      "s11",
+      "s12",
+      "s13",
+      "s15",
+      "s17",
+      "s20",
+      "s21"
+    ],
+    "n_selected_features": 14
+  },
+  {
+    "subset": "FD004",
+    "n_train_units": 249,
+    "n_test_units": 248,
+    "train_samples": 42004,
+    "val_samples": 6899,
+    "test_samples": 12346,
+    "missing": {
+      "total_missing": 0,
+      "missing_by_col": {}
+    },
+    "constant_sensors": [],
+    "noise_rate": 0.1542,
+    "selected_features": [
+      "s4",
+      "s9",
+      "s10",
+      "s11",
+      "s14",
+      "s16"
+    ],
+    "n_selected_features": 6
+  }
+]

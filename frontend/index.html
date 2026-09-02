@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设备工况智能预测系统</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<script src="/static/js/echarts.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">⚙️</span>
+    <div>
+      <h1>设备工况智能预测系统</h1>
+      <p>面向小样本工业工况预测 · 统计学习 + 深度学习 + 智能计算优化</p>
+    </div>
+  </div>
+  <div class="status" id="api-status"><span class="dot"></span>连接中...</div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="overview">总览</button>
+  <button class="tab" data-tab="data">数据管理</button>
+  <button class="tab" data-tab="train">模型训练</button>
+  <button class="tab" data-tab="optimize">智能优化</button>
+  <button class="tab" data-tab="predict">在线预测</button>
+  <button class="tab" data-tab="compare">对比分析</button>
+</nav>
+
+<main class="content">
+  <!-- 总览 -->
+  <section id="tab-overview" class="tab-panel active">
+    <div class="cards" id="overview-cards"></div>
+    <div class="grid-2">
+      <div class="panel"><h3>数据集特征筛选概览</h3><div id="chart-features" class="chart"></div></div>
+      <div class="panel"><h3>模型对比（参数量 / 推理耗时）</h3><div id="chart-model" class="chart"></div></div>
+    </div>
+  </section>
+
+  <!-- 数据管理 -->
+  <section id="tab-data" class="tab-panel">
+    <div class="panel">
+      <h3>数据预处理（统计学习方法）</h3>
+      <p class="desc">对 C-MAPSS 原始数据进行清洗、噪声识别（IQR+Z-score）、特征筛选（方差+相关+ANOVA）、划分与标准化。</p>
+      <div class="row">
+        <select id="data-subset">
+          <option value="FD001">FD001</option>
+          <option value="FD002">FD002</option>
+          <option value="FD003">FD003</option>
+          <option value="FD004">FD004</option>
+        </select>
+        <button class="btn primary" onclick="preprocess()">开始预处理</button>
+        <button class="btn" onclick="preprocessAll()">预处理全部子集</button>
+      </div>
+      <div id="data-result" class="result"></div>
+    </div>
+    <div class="panel">
+      <h3>已入库数据集</h3>
+      <table id="dataset-table" class="table">
+        <thead><tr><th>子集</th><th>训练样本</th><th>测试样本</th><th>筛选特征数</th><th>噪声率</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <h3>特征筛选详情</h3>
+      <div id="feature-detail" class="result"></div>
+    </div>
+  </section>
+
+  <!-- 模型训练 -->
+  <section id="tab-train" class="tab-panel">
+    <div class="panel">
+      <h3>LSTM 深度学习模型训练</h3>
+      <p class="desc">搭建双层 LSTM 时序网络，实现设备 RUL 预测；含 Dropout 正则化、Adam + 权重衰减、早停与学习率调度。</p>
+      <div class="form-grid">
+        <label>子集 <select id="train-subset"><option>FD001</option><option>FD002</option><option>FD003</option><option>FD004</option></select></label>
+        <label>训练样本 <input id="train-samples" type="number" value="400" min="30" max="2000"></label>
+        <label>窗口长度 <input id="train-window" type="number" value="30" min="10" max="60"></label>
+        <label>训练轮数 <input id="train-epochs" type="number" value="15" min="1" max="100"></label>
+        <label>隐层维度 <input id="train-hidden" type="number" value="64" min="8" max="256"></label>
+        <label>学习率 <input id="train-lr" type="number" value="0.001" step="0.0001"></label>
+      </div>
+      <button class="btn primary" onclick="trainModel()">开始训练</button>
+      <div id="train-result" class="result"></div>
+    </div>
+    <div class="panel">
+      <h3>已训练模型</h3>
+      <table id="model-table" class="table">
+        <thead><tr><th>ID</th><th>模型名</th><th>类型</th><th>子集</th><th>参数量(K)</th><th>推理耗时(ms)</th><th>MAE</th><th>RMSE</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 智能优化 -->
+  <section id="tab-optimize" class="tab-panel">
+    <div class="panel">
+      <h3>智能计算优化（剪枝 + 量化）</h3>
+      <p class="desc">对基准模型实施权重幅值剪枝与 int8 参数量化，降低计算开销、适配普通 PC。</p>
+      <div class="form-grid">
+        <label>子集 <select id="opt-subset"><option>FD001</option><option>FD002</option><option>FD003</option><option>FD004</option></select></label>
+        <label>基准模型 <select id="opt-model"></select></label>
+        <label>剪枝比例 <input id="opt-prune" type="number" value="0.3" min="0.05" max="0.9" step="0.05"></label>
+        <label>量化位数 <input id="opt-bits" type="number" value="8" min="4" max="16"></label>
+      </div>
+      <button class="btn primary" onclick="optimize()">执行优化</button>
+      <div id="opt-result" class="result"></div>
+    </div>
+    <div class="panel">
+      <h3>压缩前后对比</h3>
+      <div id="chart-opt-compare" class="chart"></div>
+    </div>
+  </section>
+
+  <!-- 在线预测 -->
+  <section id="tab-predict" class="tab-panel">
+    <div class="panel">
+      <h3>在线 RUL 预测</h3>
+      <p class="desc">选择某台发动机最近一段周期的传感器数据，预测剩余使用寿命（RUL）。</p>
+      <div class="form-grid">
+        <label>子集 <select id="pred-subset"><option>FD001</option><option>FD002</option><option>FD003</option><option>FD004</option></select></label>
+        <label>模型 <select id="pred-model"></select></label>
+        <label>发动机单元号 <input id="pred-unit" type="number" value="2"></label>
+      </div>
+      <button class="btn primary" onclick="predictRul()">开始预测</button>
+      <div id="pred-result" class="result"></div>
+    </div>
+    <div class="panel">
+      <h3>预测记录</h3>
+      <table id="pred-table" class="table">
+        <thead><tr><th>子集</th><th>模型</th><th>单元</th><th>最后周期</th><th>真值RUL</th><th>预测RUL</th><th>绝对误差</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 对比分析 -->
+  <section id="tab-compare" class="tab-panel">
+    <div class="panel">
+      <h3>基准模型 vs 优化模型 对比分析</h3>
+      <div class="row">
+        <select id="cmp-subset"><option>FD001</option><option>FD002</option><option>FD003</option><option>FD004</option></select>
+        <button class="btn primary" onclick="loadCompare()">加载对比</button>
+      </div>
+      <div id="compare-result" class="result"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">课程设计：面向小样本工业工况预测 · vibe coding · GitHub 归档</footer>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

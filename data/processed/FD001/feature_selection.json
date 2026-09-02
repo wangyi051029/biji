@@ -1,0 +1,31 @@
+{
+  "raw_sensors": 21,
+  "removed_by_variance": [
+    "s1",
+    "s5",
+    "s10",
+    "s16",
+    "s18",
+    "s19"
+  ],
+  "removed_by_correlation": [
+    "s14"
+  ],
+  "removed_by_anova": [],
+  "selected_features": [
+    "s2",
+    "s3",
+    "s4",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s11",
+    "s12",
+    "s13",
+    "s15",
+    "s17",
+    "s20",
+    "s21"
+  ]
+}

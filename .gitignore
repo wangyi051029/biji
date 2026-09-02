@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# 本地工具产物（PPT 工作文件等，PPT 成品以飞书在线链接交付）
+.lark-slides/
+
+# 运行时日志
+*.log
+
+# 训练模型权重（可通过 backend/seed.py 重新生成）
+data/models/
+*.pt
+*.pth
+*.bin
+*.safetensors
