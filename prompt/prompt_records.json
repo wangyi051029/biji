@@ -79,6 +79,20 @@
           "content": "浏览器端到端验证通过：手动测试页可\"填入示例数据\"并\"开始预测\"，FD001 示例输入预测 RUL≈37.28；预测记录同步入库（单元标记为\"手动\"）。pytest 由 28 项增至 29 项全部通过。"
         }
       ]
+    },
+    {
+      "stage": "阶段7 手动测试界面与离线单文件测试站、GitHub部署",
+      "date": "2026-09-03",
+      "exchanges": [
+        {
+          "role": "user",
+          "content": "做一个可以输入数据的测试界面；把网站给我；建立任何电脑都能直接使用的新测试网站；把网址给我"
+        },
+        {
+          "role": "assistant",
+          "content": "①后端新增 GET /api/model/info 与 POST /api/model/predict_manual，前端新增第7标签页手动测试（输入传感器读数→滑窗→RUL），修复 true_rul=None 的误差计算 bug，测试增至29项全过；②沙箱内 127.0.0.1 与 cloudflared 隧道因执行环境周期性清理后台进程而无法稳定承载公网网址（Error 1033）；③改为离线单文件方案：build_offline_site.py 将 FD001 双层 LSTM(hidden=96,窗口30) 权重与标准化参数内嵌为单个 HTML，浏览器本地 JS 完成 LSTM 推理，JS 与 Python 数值一致(误差<1e-5)，任何电脑双击即用；④部署到 GitHub Pages（docs/index.html），获得永久稳定网址 https://wangyi051029.github.io/biji/，全量代码已推送仓库，README 同步更新。"
+        }
+      ]
     }
   ],
   "next_stage_notes": "待办：①录制 3 分钟演示视频；②用户提供 GitHub PAT 后推送全部成果到 wangyi051029/biji；③push 前确认 .gitignore 生效（排除 data/app.db、data/models、__pycache__ 等）。"
