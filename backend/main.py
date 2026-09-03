@@ -84,6 +84,10 @@ class OptimizeReq(BaseModel):
     model_name: str
     prune_ratio: float = Field(0.3, gt=0, lt=1)
     quant_bits: int = Field(8, ge=4, le=16)
+class PredictManualReq(BaseModel):
+    subset: str = "FD001"
+    model_name: str
+    rows: list[list[float]]
 
 
 # ---------------- 基础 ----------------
@@ -143,6 +147,18 @@ def predict(req: PredictReq):
 @app.get("/api/model/list")
 def list_models():
     return db.list_models()
+@app.get("/api/model/info/{model_name}")
+def model_info(model_name: str):
+    try:
+        return services.get_model_info(model_name)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+@app.post("/api/model/predict_manual")
+def predict_manual(req: PredictManualReq):
+    try:
+        return services.predict_rul_manual(req.subset, req.model_name, req.rows)
+    except Exception as e:
+        raise HTTPException(400, str(e))
 
 
 # ---------------- 优化服务 ----------------

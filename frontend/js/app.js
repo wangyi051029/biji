@@ -53,10 +53,14 @@ document.querySelectorAll('.tab').forEach(t => {
     if (t.dataset.tab === 'train') loadModels();
     if (t.dataset.tab === 'optimize') refreshOptModelSelect();
     if (t.dataset.tab === 'predict') refreshPredModelSelect();
+    if (t.dataset.tab === 'manual') refreshManualModelSelect();
     if (t.dataset.tab === 'compare') loadCompare();
     setTimeout(() => { Object.values(charts).forEach(c => c && c.resize()); }, 50);
   });
 });
+if ($('manual-model')) {
+  $('manual-model').addEventListener('change', (e) => loadManualModelInfo(e.target.value));
+}
 
 /* ---------- 总览 ---------- */
 async function loadOverview() {
@@ -238,6 +242,67 @@ async function loadPredTable() {
     <tr><td>${p.dataset}</td><td>${p.model_name}</td><td>${p.unit}</td>
     <td>${p.last_cycle}</td><td>${p.true_rul}</td><td>${p.pred_rul}</td>
     <td>${p.abs_error}</td></tr>`).join('');
+  const m = $('manual-pred-table');
+  if (m) m.querySelector('tbody').innerHTML = rows.map(p => `
+    <tr><td>${p.dataset}</td><td>${p.model_name}</td><td>${p.unit === 0 ? '手动' : p.unit}</td>
+    <td>${p.last_cycle}</td><td>${p.true_rul ?? '—'}</td><td>${p.pred_rul}</td>
+    <td>${p.abs_error}</td></tr>`).join('');
+}
+/* ---------- 手动输入数据测试 ---------- */
+async function refreshManualModelSelect() {
+  const models = await api('/api/model/list');
+  $('manual-model').innerHTML = models.map(m => `<option value="${m.name}">${m.name} (${m.dataset})</option>`).join('');
+  if (models.length) await loadManualModelInfo(models[0].name);
+}
+async function loadManualModelInfo(name) {
+  try {
+    const info = await api('/api/model/info/' + encodeURIComponent(name));
+    const feats = info.sensor_features || [];
+    $('manual-feats').innerHTML =
+      `<b>该模型所需特征（每行 ${feats.length} 个，按此顺序，逗号分隔）：</b><br>` +
+      feats.join(' , ') +
+      `<br><span style="color:#888">窗口长度 ${info.window} 个周期；可输入多行（每行一个周期），系统取最近 ${info.window} 个周期构造窗口。</span>`;
+    // 子集与模型一致时同步下拉
+    if (info.subset && $('manual-subset').value !== info.subset) {
+      $('manual-subset').value = info.subset;
+    }
+    $('manual-input').dataset.sample = info.sample_values ? info.sample_values.join(',') : '';
+  } catch (e) {
+    $('manual-feats').textContent = '模型信息加载失败：' + e.message;
+  }
+}
+function fillSample() {
+  const sample = ($('manual-input').dataset.sample || '').trim();
+  if (!sample) { showResult('manual-result', '暂无示例数据，请先选择已训练模型', false); return; }
+  $('manual-input').value = sample;
+  showResult('manual-result', '已填入一行示例传感器读数，点击"开始预测"', true);
+}
+function clearManual() {
+  $('manual-input').value = '';
+  $('manual-result').textContent = '';
+}
+async function predictManual() {
+  const subset = $('manual-subset').value;
+  const model = $('manual-model').value;
+  const raw = $('manual-input').value.trim();
+  if (!model) { showResult('manual-result', '请先训练或选择模型', false); return; }
+  if (!raw) { showResult('manual-result', '请输入传感器读数', false); return; }
+  const rows = raw.split(/\n+/).map(line => line.trim()).filter(Boolean)
+    .map(line => line.split(/[,，\s]+/).map(Number));
+  if (rows.some(r => r.some(v => isNaN(v)))) {
+    showResult('manual-result', '输入包含非数字内容，请检查格式（每行逗号分隔数值）', false);
+    return;
+  }
+  showResult('manual-result', '预测中...');
+  try {
+    const r = await api('/api/model/predict_manual', 'POST', { subset, model_name: model, rows });
+    showResult('manual-result',
+      `预测结果：剩余使用寿命 RUL ≈ ${r.pred_rul} 个周期\n` +
+      `（模型：${r.model_name} · 输入 ${r.input_rows} 个周期 · 窗口 ${r.window_used}）\n` +
+      (r.note || ''), true);
+    await loadPredTable();
+    setStatus('手动测试预测完成', 'ok');
+  } catch (e) { showResult('manual-result', e.message, false); }
 }
 
 /* ---------- 对比分析 ---------- */

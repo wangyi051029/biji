@@ -65,6 +65,18 @@
         {
           "role": "assistant",
           "content": "成果交付：13 页 PPT 全部写入并回读校验通过；已通过 present_files 交付在线链接。过程中 GitHub 推送因缺少凭据(GITHUB_TOKEN 为空/gh 未登录)被阻塞，需用户提供带仓库权限的 PAT 后执行 git push。"
+        },
+        {
+          "role": "user",
+          "content": "做一个可以输入数据的测试界面。"
+        },
+        {
+          "role": "assistant",
+          "content": "在系统前端新增\"手动测试\"页面：①后端新增 GET /api/model/info/{name}（返回模型特征列表、窗口长度与示例读数，供前端动态构建表单）与 POST /api/model/predict_manual（手工输入若干周期传感器读数→按该子集 scaler 标准化→构造窗口→预测 RUL）；②preprocess_subset 同步保存 scaler.json，保证手动预测与训练使用同一套标准化参数；③修复 add_predictions 对 true_rul=None（手动输入无真值）时 abs_error 计算抛 TypeError 的缺陷；④新增 test_model_info_and_manual_predict 自动化测试。"
+        },
+        {
+          "role": "assistant",
+          "content": "浏览器端到端验证通过：手动测试页可\"填入示例数据\"并\"开始预测\"，FD001 示例输入预测 RUL≈37.28；预测记录同步入库（单元标记为\"手动\"）。pytest 由 28 项增至 29 项全部通过。"
         }
       ]
     }

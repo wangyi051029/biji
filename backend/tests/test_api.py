@@ -100,3 +100,32 @@ def test_predictions(client):
     r = client.get("/api/predictions")
     assert r.status_code == 200
     assert isinstance(r.json(), list)
+def test_model_info_and_manual_predict(client):
+    """手动输入数据测试：模型信息 + 手动预测接口。"""
+    r = client.post("/api/model/train", json={
+        "subset": "FD001", "n_samples": 100, "epochs": 2, "hidden": 32})
+    assert r.status_code == 200
+    name = r.json()["name"]
+    # 模型信息（含特征列表与示例读数）
+    r2 = client.get(f"/api/model/info/{name}")
+    assert r2.status_code == 200
+    m = r2.json()
+    assert "sensor_features" in m and len(m["sensor_features"]) > 0
+    assert m["sample_values"] is not None
+    n_feat = len(m["sensor_features"])
+    assert n_feat == len(m["sample_values"])
+    # 手动预测（多行序列）
+    rows = [m["sample_values"], m["sample_values"], m["sample_values"]]
+    r3 = client.post("/api/model/predict_manual", json={
+        "subset": "FD001", "model_name": name, "rows": rows})
+    assert r3.status_code == 200
+    body = r3.json()
+    assert "pred_rul" in body and body["input_rows"] == 3
+    # 列数不匹配应报 400
+    r4 = client.post("/api/model/predict_manual", json={
+        "subset": "FD001", "model_name": name, "rows": [[1.0, 2.0]]})
+    assert r4.status_code == 400
+    # 空输入应报 400
+    r5 = client.post("/api/model/predict_manual", json={
+        "subset": "FD001", "model_name": name, "rows": []})
+    assert r5.status_code == 400

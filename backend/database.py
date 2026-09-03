@@ -148,7 +148,7 @@ def add_predictions(records):
         VALUES (:dataset, :model_name, :unit, :last_cycle, :true_rul,
                 :pred_rul, :abs_error, :created_at)
     """, [{
-        **r, "abs_error": abs(r.get("true_rul", 0) - r.get("pred_rul", 0)),
+        **r, "abs_error": abs((r.get("true_rul") or 0) - (r.get("pred_rul") or 0)),
         "created_at": now_str(),
     } for r in records])
     conn.commit()

@@ -62,6 +62,14 @@ def preprocess_subset(subset, save_csv=True, persist=True):
         with open(os.path.join(out, "feature_selection.json"), "w",
                   encoding="utf-8") as f:
             json.dump(meta["feature_selection"], f, ensure_ascii=False, indent=2)
+        # 保存标准化参数（供手动输入数据预测时使用同一套标准化）
+        with open(os.path.join(out, "scaler.json"), "w",
+                  encoding="utf-8") as f:
+            json.dump({
+                "mean": scaler.mean_.tolist(),
+                "scale": scaler.scale_.tolist(),
+                "features": list(meta["features"]),
+            }, f, ensure_ascii=False, indent=2)
 
     if persist:
         fs = meta["feature_selection"]
@@ -210,6 +218,92 @@ def predict_rul(subset, model_name, unit, n_cycles=30):
     return {"model_name": model_name, "subset": subset, "unit": int(unit),
             "last_cycle": last_cycle, "true_rul": true_rul,
             "pred_rul": round(pred, 2), "window_used": window}
+def get_model_info(model_name):
+    """
+    返回模型元信息（特征列表、窗口长度、子集），
+    并附带一行从原始训练数据抽取的示例传感器读数，
+    供前端"手动输入数据测试"界面动态构建表单与填充示例。
+    """
+    meta_path = os.path.join(MODEL_DIR, f"{model_name}.pt.meta.json")
+    if not os.path.exists(meta_path):
+        raise FileNotFoundError(f"模型 {model_name} 不存在，请先训练")
+    with open(meta_path, encoding="utf-8") as f:
+        meta = json.load(f)
+    subset = meta.get("subset", "FD001")
+    sensor_feats = [c for c in meta.get("features", []) if c != "cycle"]
+    sample = None
+    raw_path = _raw_path(subset)
+    if os.path.exists(raw_path):
+        raw = stat.load_raw_train(raw_path)
+        row = raw.iloc[len(raw) // 2]
+        sample = [round(float(row[c]), 4) for c in sensor_feats]
+    return {
+        "name": model_name, "subset": subset,
+        "features": meta.get("features", []),
+        "sensor_features": sensor_feats,
+        "window": meta.get("window", 30),
+        "sample_values": sample,
+    }
+def predict_rul_manual(subset, model_name, rows):
+    """
+    手动输入数据预测（测试界面）：
+    用户输入若干周期的原始传感器读数（每行一个周期），
+    使用该子集的 StandardScaler 标准化后构造滑动窗口，预测 RUL。
+    rows: list[list[float]]，每行依次为模型所用传感器特征（不含 cycle）的原始读数。
+    """
+    model_path = os.path.join(MODEL_DIR, f"{model_name}.pt")
+    meta_path = model_path + ".meta.json"
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"模型 {model_name} 不存在，请先训练")
+    with open(meta_path, encoding="utf-8") as f:
+        meta = json.load(f)
+    feats = meta.get("features", [])
+    window = meta.get("window", 30)
+    sensor_feats = [c for c in feats if c != "cycle"]
+    if not rows or not rows[0]:
+        raise ValueError("请输入至少一行传感器读数")
+    if len(rows[0]) != len(sensor_feats):
+        raise ValueError(
+            f"每行需要 {len(sensor_feats)} 个特征值（顺序：{', '.join(sensor_feats)}），"
+            f"实际输入 {len(rows[0])} 个")
+    # 加载标准化参数
+    scaler_path = os.path.join(PROCESSED_DIR, subset, "scaler.json")
+    if not os.path.exists(scaler_path):
+        raise FileNotFoundError(f"缺少 {subset} 标准化参数 scaler.json，请先执行预处理")
+    with open(scaler_path, encoding="utf-8") as f:
+        sc = json.load(f)
+    mean = np.asarray(sc["mean"], dtype=np.float64)
+    scale = np.asarray(sc["scale"], dtype=np.float64)
+    sc_feats = list(sc.get("features", []))
+    # 若 scaler 特征顺序与模型不一致，按模型特征顺序重排
+    if sc_feats and sc_feats != feats:
+        idx = [sc_feats.index(f) for f in feats]
+        mean, scale = mean[idx], scale[idx]
+    scale[scale == 0] = 1.0  # 防除零
+    # 构造 DataFrame（cycle 自动递增）
+    df = pd.DataFrame(rows, columns=sensor_feats).astype(float)
+    df.insert(0, "cycle", range(1, len(df) + 1))
+    # 标准化 → 构造窗口
+    X = (df[feats].values - mean) / scale
+    if len(X) < window:
+        pad = window - len(X)
+        X = np.concatenate([np.repeat(X[:1], pad, axis=0), X], axis=0)
+    win = X[-window:][None, :, :].astype(np.float32)
+    predictor = dl.RULPredictor(input_size=len(feats), window=window)
+    predictor.load(model_path)
+    pred = float(predictor.predict(win)[0])
+    # 持久化预测记录（unit=0 表示手动输入）
+    db.add_predictions([{
+        "dataset": subset, "model_name": model_name, "unit": 0,
+        "last_cycle": len(df), "true_rul": None,
+        "pred_rul": round(pred, 2),
+    }])
+    return {
+        "model_name": model_name, "subset": subset,
+        "input_rows": len(df), "features": sensor_feats,
+        "window_used": window, "pred_rul": round(pred, 2),
+        "note": "手动输入数据测试（非数据集单元，RUL 仅供参考）",
+    }
 
 
 # ---------------- 优化服务 ----------------

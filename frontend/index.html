@@ -25,6 +25,7 @@
   <button class="tab" data-tab="train">模型训练</button>
   <button class="tab" data-tab="optimize">智能优化</button>
   <button class="tab" data-tab="predict">在线预测</button>
+  <button class="tab" data-tab="manual">手动测试</button>
   <button class="tab" data-tab="compare">对比分析</button>
 </nav>
 
@@ -135,6 +136,33 @@
     </div>
   </section>
 
+  <!-- 手动测试 -->
+  <section id="tab-manual" class="tab-panel">
+    <div class="panel">
+      <h3>手动输入数据测试</h3>
+      <p class="desc">手工输入若干周期的传感器读数（每行一个周期，用逗号分隔），系统自动完成标准化并预测剩余寿命（RUL）。适用于脱离数据集、输入实测数据的快速测试。</p>
+      <div class="form-grid">
+        <label>子集 <select id="manual-subset"><option>FD001</option><option>FD002</option><option>FD003</option><option>FD004</option></select></label>
+        <label>模型 <select id="manual-model"></select></label>
+      </div>
+      <div class="row">
+        <button class="btn" onclick="fillSample()">填入示例数据</button>
+        <button class="btn" onclick="clearManual()">清空</button>
+        <button class="btn primary" onclick="predictManual()">开始预测</button>
+      </div>
+      <label>传感器读数（每行一个周期，逗号分隔）</label>
+      <textarea id="manual-input" rows="6" placeholder="例如：641.82,1588.53,1405.05,554.48,2380.21,9046.19,518.66,...&#10;一行代表一个周期的传感器读数，可输入多行模拟历史序列"></textarea>
+      <div id="manual-feats" class="result" style="white-space:normal"></div>
+      <div id="manual-result" class="result"></div>
+    </div>
+    <div class="panel">
+      <h3>预测记录</h3>
+      <table id="manual-pred-table" class="table">
+        <thead><tr><th>子集</th><th>模型</th><th>单元</th><th>最后周期</th><th>真值RUL</th><th>预测RUL</th><th>绝对误差</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
   <!-- 对比分析 -->
   <section id="tab-compare" class="tab-panel">
     <div class="panel">
