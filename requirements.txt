@@ -1,5 +1,7 @@
 # 依赖清单
 # 安装：pip install -r requirements.txt
+# Streamlit 云部署请用本文件（torch 走 CPU index，体积小、构建快）
+--extra-index-url https://download.pytorch.org/whl/cpu
 pandas>=2.0
 numpy>=1.24
 scipy>=1.10
@@ -7,5 +9,6 @@ scikit-learn>=1.3
 fastapi>=0.110
 uvicorn>=0.27
 pydantic>=2.0
-torch>=2.0          # CPU 版：pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch>=2.0          # CPU 版（云部署：pip install torch --index-url https://download.pytorch.org/whl/cpu）
+streamlit>=1.35
 pytest>=7.0

@@ -13,8 +13,13 @@ venv/
 *.log
 
 # 训练模型权重（可通过 backend/seed.py 重新生成）
-data/models/
+# 云部署需要，放行已训练的 FD001 演示模型
+data/models/*
 *.pt
 *.pth
 *.bin
 *.safetensors
+!data/models/FD001_LSTM.pt
+!data/models/FD001_LSTM.pt.meta.json
+!data/models/FD001_LSTM_pruned30_q8.pt
+!data/models/FD001_LSTM_pruned30_q8.pt.meta.json

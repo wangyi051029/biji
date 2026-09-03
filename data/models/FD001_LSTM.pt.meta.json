@@ -1,0 +1,27 @@
+{
+  "subset": "FD001",
+  "features": [
+    "cycle",
+    "s2",
+    "s3",
+    "s4",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s11",
+    "s12",
+    "s13",
+    "s15",
+    "s17",
+    "s20",
+    "s21"
+  ],
+  "window": 30,
+  "arch": {
+    "input_size": 15,
+    "hidden_size": 96,
+    "num_layers": 2,
+    "dropout": 0.2
+  }
+}
