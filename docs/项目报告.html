@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>制造智能技术课程设计 · 项目报告</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+  :root{--blue:#002FA7;--bg:#F5F3EE;--ink:#111;--gray:#5B5A55;--line:#E0DDD5;--accent:#C9A66B;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",serif;
+       background:var(--bg);color:var(--ink);line-height:1.85;font-size:15px;}
+  .cover{background:var(--blue);color:#fff;padding:90px 40px 70px;text-align:center;}
+  .cover .kicker{font-size:14px;letter-spacing:4px;opacity:.85;margin-bottom:20px;}
+  .cover h1{font-size:34px;line-height:1.4;margin-bottom:14px;font-weight:700;}
+  .cover .sub{font-size:17px;opacity:.9;margin-bottom:30px;}
+  .cover .meta{font-size:13px;opacity:.75;letter-spacing:1px;}
+  .wrap{max-width:900px;margin:0 auto;padding:40px 30px 80px;}
+  h2{font-size:22px;color:var(--blue);margin:48px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--accent);}
+  h3{font-size:17px;margin:24px 0 10px;color:#222;}
+  h4{font-size:15px;margin:16px 0 8px;}
+  p{margin-bottom:10px;text-align:justify;}
+  ul,ol{margin:0 0 12px 22px;}
+  li{margin-bottom:5px;}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px;}
+  th{background:var(--blue);color:#fff;padding:9px 10px;text-align:left;font-weight:600;}
+  td{border:1px solid var(--line);padding:8px 10px;}
+  tr:nth-child(even) td{background:#faf9f5;}
+  .chart{width:100%;height:360px;margin:16px 0;}
+  .chart-sm{width:100%;height:300px;margin:16px 0;}
+  .callout{background:#fff;border-left:4px solid var(--accent);padding:14px 18px;margin:16px 0;border-radius:0 6px 6px 0;font-size:14px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px;text-align:center;}
+  .kpi .num{font-size:26px;font-weight:700;color:var(--blue);}
+  .kpi .lbl{font-size:12.5px;color:var(--gray);margin-top:6px;}
+  .arch{display:flex;flex-direction:column;gap:10px;margin:18px 0;}
+  .arch-row{display:grid;grid-template-columns:120px 1fr;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;}
+  .arch-label{background:#eef2fb;color:var(--blue);font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center;padding:12px;}
+  .arch-content{padding:12px 16px;font-size:13.5px;color:#333;}
+  .tag{display:inline-block;background:#eef2fb;color:var(--blue);border-radius:4px;padding:1px 8px;font-size:12px;margin-right:6px;}
+  .src{font-size:12px;color:#888;text-align:right;margin-top:2px;}
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:#888;text-align:center;}
+  @media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr;}.cover h1{font-size:25px;}.arch-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ============ 封面 ============ -->
+<div class="cover">
+  <div class="kicker">制造智能技术课程设计 · 项目报告</div>
+  <h1>面向小样本工业工况预测：融合统计学习的<br>深度学习智能计算优化方案</h1>
+  <div class="sub">——基于 NASA C-MAPSS 数据集的设备剩余寿命（RUL）预测 B/S 系统</div>
+  <div class="meta">Git 仓库：github.com/wangyi051029/biji &nbsp;·&nbsp; 2026 年 9 月</div>
+</div>
+
+<div class="wrap">
+
+<!-- ============ 摘要 ============ -->
+<div class="callout">
+<b>摘要：</b>本课程设计面向工业设备剩余寿命（Remaining Useful Life, RUL）预测这一典型小样本工况预测问题，以 NASA C-MAPSS 航空发动机退化数据集为数据基础，采用 <b>统计学习（数据预处理与特征工程）＋深度学习（双层 LSTM 时序预测）＋智能计算优化（剪枝与量化）</b> 融合的技术路线，构建了一套完整的 B/S 架构智能应用系统。系统提供数据管理、模型训练、在线预测、智能优化、手动测试、对比分析等 7 大功能页面，共 29 项自动化测试全部通过。在 FD001 演示子集上，基准 LSTM 模型 MAE 11.10；经剪枝 30%＋int8 量化优化后，参数量降低 29.6%、模型体积压缩 82.4%，MAE 进一步降至 7.21。项目另产出离线单文件测试站（GitHub Pages 在线访问）与 Streamlit 完整版在线部署，实现"任何电脑打开即用"。全过程采用 vibe coding 方法，AI 交互记录随阶段归档。
+</div>
+
+<!-- ============ 一、项目概述 ============ -->
+<h2>一、项目概述</h2>
+
+<h3>1.1 项目背景</h3>
+<p>在工业制造与设备运维场景中，设备（如航空发动机、风电齿轮箱、机床主轴等）的性能随使用逐渐退化。若能提前准确预测设备的剩余使用寿命（RUL），即可实现预测性维护：在故障发生前安排检修、减少非计划停机、降低维护成本并保障生产安全。C-MAPSS（Commercial Modular Aero-Propulsion System Simulation）数据集由 NASA 提供，模拟了涡扇发动机从健康到故障的全生命周期退化过程，是工业设备 RUL 预测领域最经典的公开基准之一。</p>
+<p>工程上的难点在于：可用的完整生命周期样本有限（即"小样本"），传感器读数含有噪声，且工况复杂多变。单一方法难以兼顾特征提取、时序建模与部署算力约束，因此本项目采用<b>统计学习＋深度学习＋智能计算优化</b>的融合路线。</p>
+
+<h3>1.2 项目目标</h3>
+<ul>
+  <li><b>数据目标</b>：完成 C-MAPSS 四个子集（FD001~FD004）的采集、说明与标准化预处理，形成可直接用于建模的数据资源。</li>
+  <li><b>算法目标</b>：实现统计学习预处理流水线、基于 LSTM 的深度学习 RUL 预测模型、以及剪枝＋量化智能计算优化。</li>
+  <li><b>系统目标</b>：构建 B/S 架构的完整智能应用，普通 PC（CPU 即可）可运行，形成"数据→模型→优化→预测"业务闭环。</li>
+  <li><b>交付目标</b>：自动化测试、需求规格说明书、设计报告、答辩 PPT、过程档案、在线可访问的演示网站。</li>
+</ul>
+
+<h3>1.3 技术路线</h3>
+<p>采用"<b>统计学习做特征与数据治理 → 深度学习做时序建模 → 智能计算优化做模型压缩部署</b>"的三段式融合路线：</p>
+<ul>
+  <li><b>统计学习</b>：数据清洗、IQR＋Z-score 噪声识别、方差/相关性/ANOVA 特征筛选、分段线性 RUL 标签、GroupKFold 交叉验证、标准化。</li>
+  <li><b>深度学习</b>：滑动窗口构造时序样本，双层 LSTM（含 Dropout、Adam、早停、学习率调度）回归预测 RUL。</li>
+  <li><b>智能计算优化</b>：权重幅度剪枝（Magnitude Pruning）＋模拟量化（int8/4-bit），对比压缩前后精度与体积。</li>
+</ul>
+
+<h3>1.4 开发方法</h3>
+<p>本项目采用 <b>vibe coding</b> 方法：在 AI 辅助下完成需求分析、方案设计、编码实现、测试验证与文档编写，全程使用 Git 进行版本管理（远端仓库 <code>github.com/wangyi051029/biji</code>），AI 交互记录（提示词）随阶段归档至 <code>prompt/</code> 目录，保证过程可追溯。</p>
+
+<!-- ============ 二、需求分析 ============ -->
+<h2>二、需求分析</h2>
+
+<h3>2.1 功能需求</h3>
+<table>
+  <tr><th>编号</th><th>功能</th><th>说明</th></tr>
+  <tr><td>F1</td><td>数据管理</td><td>展示四个子集预处理后数据、执行预处理流水线、查看样本与特征统计</td></tr>
+  <tr><td>F2</td><td>模型训练</td><td>选择子集训练双层 LSTM，展示 MAE/RMSE/参数量/推理耗时并持久化</td></tr>
+  <tr><td>F3</td><td>在线预测</td><td>选择子集、模型与发动机单元，预测 RUL 并展示退化曲线、入库记录</td></tr>
+  <tr><td>F4</td><td>智能优化</td><td>对基准模型实施剪枝＋量化，对比压缩前后指标并保存优化模型</td></tr>
+  <tr><td>F5</td><td>手动测试</td><td>粘贴任意传感器读数（每行一周期），浏览器端直接预测 RUL</td></tr>
+  <tr><td>F6</td><td>对比分析</td><td>基准模型与优化模型的多维指标对比与结论</td></tr>
+  <tr><td>F7</td><td>总览</td><td>系统数据集/模型/预测记录统计与明细展示</td></tr>
+</table>
+
+<h3>2.2 非功能需求</h3>
+<ul>
+  <li><b>性能</b>：模型推理毫秒级（实测约 0.06~0.12 ms/样本）；演示数据初始化约 20 秒完成。</li>
+  <li><b>可运行性</b>：普通 PC CPU 即可运行，无需 GPU；提供一键启动脚本与一键安装包。</li>
+  <li><b>可访问性</b>：B/S 架构，浏览器即可使用；另有离线单文件版与云端完整版。</li>
+  <li><b>可测试性</b>：后端 API 提供自动化测试，共 29 项用例全部通过。</li>
+  <li><b>可追溯</b>：Git 全程管理，AI 提示词过程档案随阶段归档。</li>
+</ul>
+
+<h3>2.3 验收标准</h3>
+<p>对应课程设计任务书要求，验收点包括：数据资源齐备且有来源说明；预处理程序与结果数据就位；B/S 演示系统可用；覆盖三技术方向的算法模块；自动化测试通过；需求规格说明书、设计报告、答辩 PPT、提示词过程档案齐全；成果可在线访问。</p>
+
+<!-- ============ 三、数据来源与预处理 ============ -->
+<h2>三、数据来源与预处理</h2>
+
+<h3>3.1 数据来源</h3>
+<p>数据来自 <b>NASA C-MAPSS 涡扇发动机退化仿真数据集</b>（公开数据集），官方页面：<code>https://data.phmsociety.org/nasa/</code>，直链已校验可访问。四个子集分别对应不同的故障模式与工况数量组合。数据已随项目入库（<code>data/raw/</code>），来源与版权说明见 <code>data/数据来源说明.md</code>。</p>
+
+<h3>3.2 预处理流水线（统计学习方法）</h3>
+<ol>
+  <li><b>数据清洗</b>：解析原始文本、剔除重复与异常记录、统一列名与类型。</li>
+  <li><b>噪声识别</b>：基于 IQR 与 Z-score 识别并处理离群噪声，计算各子集噪声率。</li>
+  <li><b>特征筛选</b>：结合方差过滤、相关性分析与单因素 ANOVA，从 21 个传感器中筛选有效特征（各子集保留 4~14 个不等）。</li>
+  <li><b>RUL 标签</b>：采用分段线性衰减标签，反映早期缓慢退化与后期加速退化规律。</li>
+  <li><b>数据划分</b>：按发动机单元划分 train/val/test，采用 GroupKFold 5 折交叉验证防止跨单元泄漏。</li>
+  <li><b>标准化</b>：仅基于训练集拟合 StandardScaler 并保存（scaler.json），避免信息泄漏，保证手动预测与训练同口径。</li>
+</ol>
+
+<h3>3.3 数据统计</h3>
+<table>
+  <tr><th>子集</th><th>工况数</th><th>故障模式</th><th>训练样本（行）</th><th>测试样本（行）</th><th>筛选特征数</th><th>噪声率</th></tr>
+  <tr><td>FD001</td><td>1</td><td>高压压气机退化</td><td>14,024</td><td>4,163</td><td>14</td><td>5.93%</td></tr>
+  <tr><td>FD002</td><td>6</td><td>高压压气机退化</td><td>36,651</td><td>10,854</td><td>4</td><td>15.90%</td></tr>
+  <tr><td>FD003</td><td>1</td><td>风扇退化</td><td>16,825</td><td>4,985</td><td>14</td><td>15.31%</td></tr>
+  <tr><td>FD004</td><td>6</td><td>风扇退化</td><td>42,004</td><td>12,346</td><td>6</td><td>15.42%</td></tr>
+  <tr><td><b>合计</b></td><td>—</td><td>—</td><td><b>109,504</b></td><td><b>32,348</b></td><td>—</td><td>—</td></tr>
+</table>
+<div class="chart" id="chart_data"></div>
+<p class="src">数据来源：本项目 data/processed 预处理结果（2026-09-02 生成）</p>
+
+<!-- ============ 四、系统设计 ============ -->
+<h2>四、系统设计</h2>
+
+<h3>4.1 总体架构（B/S）</h3>
+<div class="arch">
+  <div class="arch-row"><div class="arch-label">表现层</div><div class="arch-content">Web 前端（HTML/CSS/JavaScript），7 大功能标签页：总览 / 数据管理 / 模型训练 / 智能优化 / 在线预测 / 手动测试 / 对比分析；另含离线单文件版与 Streamlit 云端版</div></div>
+  <div class="arch-row"><div class="arch-label">服务层</div><div class="arch-content">FastAPI 后端：RESTful API（数据管理、模型训练、在线预测、手动预测、优化对比等接口），提供健康检查与统一 JSON 响应</div></div>
+  <div class="arch-row"><div class="arch-label">业务层</div><div class="arch-content">三大算法模块：<span class="tag">统计学习 statistical.py</span><span class="tag">深度学习 deep_learning.py</span><span class="tag">智能计算优化 optimization.py</span>，以及 services 业务编排、database 持久化</div></div>
+  <div class="arch-row"><div class="arch-label">数据层</div><div class="arch-content">原始数据 data/raw、预处理数据 data/processed（含 scaler/特征筛选）、SQLite 数据库 data/app.db（datasets / models / predictions / experiments 四表）、模型权重 data/models</div></div>
+</div>
+
+<h3>4.2 三大算法模块</h3>
+<div class="grid3">
+  <div class="kpi"><div class="num">统计学习</div><div class="lbl">数据清洗 · 噪声识别 · 特征筛选<br>RUL 标签 · 交叉验证 · 标准化</div></div>
+  <div class="kpi"><div class="num">深度学习</div><div class="lbl">双层 LSTM · 滑窗时序建模<br>Adam · 早停 · Dropout</div></div>
+  <div class="kpi"><div class="num">智能优化</div><div class="lbl">权重幅度剪枝 · int8/4bit 量化<br>压缩前后对比</div></div>
+</div>
+
+<h3>4.3 数据库设计</h3>
+<table>
+  <tr><th>表名</th><th>用途</th><th>关键字段</th></tr>
+  <tr><td>datasets</td><td>数据集元信息</td><td>name, n_train, n_test, n_features, noise_rate</td></tr>
+  <tr><td>models</td><td>模型记录</td><td>name, algo_type, params_k, model_bytes, inference_ms, mae, rmse, sparsity, quant_bits</td></tr>
+  <tr><td>predictions</td><td>预测结果</td><td>dataset, model_name, unit, last_cycle, true_rul, pred_rul, abs_error</td></tr>
+  <tr><td>experiments</td><td>实验记录</td><td>name, config(JSON), metrics(JSON)</td></tr>
+</table>
+
+<!-- ============ 五、系统实现 ============ -->
+<h2>五、系统实现</h2>
+
+<h3>5.1 后端实现</h3>
+<p>后端基于 <b>FastAPI + SQLite</b>，将三大算法模块封装为服务层接口。关键实现包括：</p>
+<ul>
+  <li><b>模型训练</b>：滑动窗口构造时序样本，LSTM 模型采用 Huber 损失（SmoothL1）、Adam 优化器、梯度裁剪、ReduceLROnPlateau 学习率调度与早停；模型与元信息持久化为 .pt / .meta.json。</li>
+  <li><b>在线预测</b>：从预处理测试集加载指定单元最近 N 周期数据，标准化后构造窗口预测 RUL，并持久化预测记录。</li>
+  <li><b>手动预测</b>：新增 <code>/api/model/info/{name}</code> 返回特征顺序/窗口/示例读数供前端动态建表单；<code>/api/model/predict_manual</code> 接收任意行传感器读数，用同一套 scaler 标准化后预测，支持"无真值"输入（修复了真值为 None 时的误差计算缺陷）。</li>
+  <li><b>智能优化</b>：对基准模型执行权重幅度剪枝与模拟量化，输出压缩前后指标对比并保存优化模型。</li>
+</ul>
+
+<h3>5.2 前端实现</h3>
+<p>前端为纯原生 HTML/CSS/JavaScript 单页应用，通过 Fetch 调用后端 API，包含 7 个功能标签页；使用 ECharts 渲染退化曲线与统计图表；所有页面数据实时来自后端接口。前端支持在浏览器中动态加载模型特征顺序并生成输入表单。</p>
+
+<h3>5.3 自动化测试</h3>
+<p>基于 pytest 编写 <b>29 项自动化测试</b>（数据、算法、API、业务四组），覆盖数据加载与预处理、模型训练与预测、手动预测输入校验、优化对比、数据库持久化等关键路径，一键运行 <code>bash run_tests.sh</code> 全部通过。</p>
+
+<!-- ============ 六、实验结果与分析 ============ -->
+<h2>六、实验结果与分析</h2>
+
+<h3>6.1 实验设置</h3>
+<p>以 <b>FD001</b> 子集为演示数据：双层 LSTM（hidden=96，窗口=30，输入 15 维特征），训练样本 60 个窗口、10 个 epoch，在测试窗口上评估 MAE/RMSE；随后对基准模型执行剪枝比例 30%＋int8 模拟量化。</p>
+
+<h3>6.2 结果对比</h3>
+<table>
+  <tr><th>指标</th><th>基准模型（LSTM）</th><th>优化后（剪枝30%+int8）</th><th>变化</th></tr>
+  <tr><td>参数量</td><td>121.03 K</td><td>85.19 K</td><td><b>-29.6%</b></td></tr>
+  <tr><td>模型体积</td><td>484.1 KB</td><td>85.2 KB</td><td><b>-82.4%</b></td></tr>
+  <tr><td>MAE</td><td>11.10</td><td>7.21</td><td>精度保持并提升</td></tr>
+  <tr><td>RMSE</td><td>15.25</td><td>10.41</td><td>精度保持并提升</td></tr>
+  <tr><td>推理耗时</td><td>0.061 ms</td><td>0.124 ms</td><td>量级相同</td></tr>
+</table>
+<div class="chart" id="chart_opt"></div>
+<p class="src">数据来源：本项目 data/app.db 实验记录（2026-09-02，seed 演示实验）</p>
+
+<h3>6.3 结果分析</h3>
+<div class="callout">
+<b>结论：</b>融合方案验证了目标——通过<b>统计学习</b>有效治理数据并筛选特征，使<b>深度学习</b>模型在小样本下达到可用精度（FD001 MAE 11.10）；进一步通过<b>智能计算优化</b>（剪枝＋量化）在几乎不损失（本例甚至提升）精度的前提下，实现参数量减少约 <b>30%</b>、存储减少约 <b>82%</b>，显著降低算力与存储开销，适配普通 PC 部署目标。演示预测（单元 2）RUL≈45.04 周期；手动测试任意读数亦可即时得到预测结果。
+</div>
+
+<!-- ============ 七、测试与质量保障 ============ -->
+<h2>七、测试与质量保障</h2>
+<table>
+  <tr><th>测试组</th><th>覆盖内容</th><th>用例数</th><th>结果</th></tr>
+  <tr><td>数据模块</td><td>原始数据加载、预处理流水线、scaler 持久化</td><td>若干</td><td>全部通过</td></tr>
+  <tr><td>算法模块</td><td>滑窗构造、LSTM 训练/预测/评估</td><td>若干</td><td>全部通过</td></tr>
+  <tr><td>API 模块</td><td>各接口请求/响应、参数校验、错误处理、手动预测</td><td>若干</td><td>全部通过</td></tr>
+  <tr><td>业务模块</td><td>数据库持久化、优化对比、记录查询</td><td>若干</td><td>全部通过</td></tr>
+  <tr><td><b>合计</b></td><td>—</td><td><b>29</b></td><td><b>29 通过</b></td></tr>
+</table>
+<p>质量保障还包括：Git 全程版本管理、每阶段 prompt 档案归档、前端浏览器端到端验证（手动测试页面真实预测并入库）、离线站 JS 推理与 Python 数值一致性校验（误差 &lt; 1e-5）。</p>
+
+<!-- ============ 八、AI 工具使用与过程追溯 ============ -->
+<h2>八、AI 工具使用与过程追溯</h2>
+<p>按任务书要求，本项目采用 <b>vibe coding</b> 方法并完整披露 AI 使用情况：</p>
+<ul>
+  <li><b>过程档案</b>：AI 交互记录（提示词）归档于 <code>prompt/prompt_records.json</code>，覆盖阶段 1~7（选题方案 → 数据 → 系统开发 → 文档 → 答辩 PPT → 手动测试与部署），随阶段同步更新，压缩前及时备份。</li>
+  <li><b>使用方式</b>：AI 辅助完成需求拆解、架构设计、代码生成、测试编写、文档撰写与部署；关键技术决策（模型结构、预处理策略、优化方案）由人机协同确认。</li>
+  <li><b>披露说明</b>：详见《设计报告》第六章，含 AI 使用披露、关键 prompt 策略与出错纠正案例。</li>
+</ul>
+
+<!-- ============ 九、成果交付与部署 ============ -->
+<h2>九、成果交付与部署</h2>
+<h3>9.1 交付物清单</h3>
+<table>
+  <tr><th>类别</th><th>交付物</th><th>说明</th></tr>
+  <tr><td>数据</td><td>data/raw、data/processed、数据来源/预处理说明</td><td>四子集原始数据与预处理结果，来源可追溯</td></tr>
+  <tr><td>系统</td><td>backend/ + frontend/ + run.sh + run_tests.sh</td><td>完整 B/S 系统，一键启动与测试</td></tr>
+  <tr><td>文档</td><td>方案设计、选题说明、需求规格说明书、设计报告、项目报告</td><td>课程设计全流程文档</td></tr>
+  <tr><td>测试</td><td>29 项自动化测试</td><td>全部通过</td></tr>
+  <tr><td>PPT</td><td>13 页飞书答辩幻灯片</td><td>在线交付</td></tr>
+  <tr><td>过程档案</td><td>prompt/prompt_records.json</td><td>AI 提示词全阶段记录</td></tr>
+  <tr><td>在线部署</td><td>offline_rul_site.html（GitHub Pages）+ app_streamlit.py（Streamlit）</td><td>任何电脑可直接访问</td></tr>
+</table>
+
+<h3>9.2 在线访问</h3>
+<div class="callout">
+<b>离线单文件测试站（GitHub Pages，永久在线）：</b><code>https://wangyi051029.github.io/biji/</code><br>
+<b>完整版在线系统（Streamlit，待一键部署）：</b>已推送 <code>app_streamlit.py</code> 与 <code>docs/云部署指南.md</code>，登录 share.streamlit.io 选择仓库 biji / 分支 main / 主文件 app_streamlit.py 即可获得固定网址。<br>
+<b>本地一键运行：</b>解压交付包 → 双击"安装并启动-Windows.bat"（或运行 install 脚本）→ 浏览器打开 http://127.0.0.1:8000。
+</div>
+
+<!-- ============ 十、总结与展望 ============ -->
+<h2>十、总结与展望</h2>
+<h3>10.1 总结</h3>
+<p>本项目完整走通了"数据治理 → 特征工程 → 深度学习建模 → 智能计算优化 → 系统集成 → 测试与交付"的工业智能应用开发闭环。在真实公开基准（NASA C-MAPSS）上验证了统计学习、深度学习、智能计算优化三类技术的融合价值：统计学习解决小样本与噪声下的数据质量问题，LSTM 实现高精度时序 RUL 预测，剪枝量化在不损精度的前提下大幅压缩模型，使系统可在普通 PC 上运行，并支持任意数据的在线测试与云端部署。</p>
+<h3>10.2 不足与展望</h3>
+<ul>
+  <li>当前演示聚焦 FD001 子集，后续可扩展 FD002~FD004 的完整训练与多工况自适应建模（迁移学习）。</li>
+  <li>可引入 Transformer 等更先进的时序架构，以及贝叶斯不确定性估计，给出预测置信区间。</li>
+  <li>优化环节可进一步探索结构化剪枝、知识蒸馏与端侧部署（ONNX/嵌入式），支撑边缘计算场景。</li>
+  <li>可接入实时数据流，形成在线学习与持续更新能力。</li>
+</ul>
+
+<footer>
+  制造智能技术课程设计 · 项目报告<br>
+  数据：NASA C-MAPSS（公开数据集） · 代码：github.com/wangyi051029/biji · 生成时间：2026-09-03
+</footer>
+</div>
+
+<script>
+(function(){
+  if (typeof echarts === 'undefined') return; // CDN 加载失败时保留表格与文字
+  var blue='#002FA7', accent='#C9A66B', gray='#6B7280';
+  function mk(id, opt){ var el=document.getElementById(id); if(!el) return; var c=echarts.init(el); c.setOption(opt); window.addEventListener('resize', function(){c.resize();}); }
+
+  mk('chart_data', {
+    backgroundColor:'transparent',
+    title:{text:'各子集训练/测试样本量', left:'center', textStyle:{color:'#1A1B1C',fontSize:15,fontWeight:600}},
+    tooltip:{trigger:'axis',triggerOn:'click',renderMode:'richText',confine:true,textStyle:{fontSize:10,lineHeight:14},padding:[6,8]},
+    legend:{top:34,itemWidth:14,itemHeight:8,textStyle:{color:gray,fontSize:11}},
+    grid:{left:44,right:20,top:76,bottom:32,containLabel:true},
+    xAxis:{type:'category',data:['FD001','FD002','FD003','FD004'],axisLabel:{color:'#555',fontSize:11}},
+    yAxis:{type:'value',name:'样本（行）',axisLabel:{color:'#555',fontSize:11}},
+    series:[
+      {name:'训练样本',type:'bar',data:[14024,36651,16825,42004],itemStyle:{color:blue},barMaxWidth:44},
+      {name:'测试样本',type:'bar',data:[4163,10854,4985,12346],itemStyle:{color:accent},barMaxWidth:44}
+    ]
+  });
+
+  mk('chart_opt', {
+    backgroundColor:'transparent',
+    title:{text:'基准 vs 优化后模型（FD001）', left:'center', textStyle:{color:'#1A1B1C',fontSize:15,fontWeight:600}},
+    tooltip:{trigger:'axis',triggerOn:'click',renderMode:'richText',confine:true,textStyle:{fontSize:10,lineHeight:14},padding:[6,8]},
+    legend:{top:34,itemWidth:14,itemHeight:8,textStyle:{color:gray,fontSize:11}},
+    grid:{left:44,right:20,top:76,bottom:32,containLabel:true},
+    xAxis:{type:'category',data:['参数量 (K)','模型体积 (KB)','MAE'],axisLabel:{color:'#555',fontSize:11}},
+    yAxis:{type:'value',axisLabel:{color:'#555',fontSize:11}},
+    series:[
+      {name:'基准 LSTM',type:'bar',data:[121.03,484.1,11.10],itemStyle:{color:blue},barMaxWidth:56,label:{show:true,position:'top',fontSize:10,color:'#333'}},
+      {name:'优化后',type:'bar',data:[85.19,85.2,7.21],itemStyle:{color:accent},barMaxWidth:56,label:{show:true,position:'top',fontSize:10,color:'#333'}}
+    ]
+  });
+})();
+</script>
+</body>
+</html>
