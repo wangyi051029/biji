@@ -43,13 +43,14 @@ python3 -m pytest        # 29 项测试全部通过
 # 或 ./run_tests.sh
 ```
 
-## 二·五、离线测试站（在线版）
+## 二·五、测试网址
 
 除完整 B/S 系统外，本项目提供**离线单文件 RUL 预测测试站**：把 FD001 预训练 LSTM 模型权重与标准化参数内嵌进单个 HTML，全部推理在浏览器本地完成，任何电脑双击即可使用（无需安装 Python / 无需后端 / 无需联网）。
 
 - 在线访问（GitHub Pages）：**https://wangyi051029.github.io/biji/** （即 `docs/index.html`）
 - 本地文件：`offline_rul_site.html`
 - 重新生成（可换子集/模型）：`python3 build_offline_site.py FD001 FD001_LSTM`
+- 完整版网址：**https://rul-system.streamlit.app/**
 
 验证：JS 推理与 Python 数值一致（误差 < 1e-5）。
 
